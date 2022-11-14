@@ -20,7 +20,7 @@ To play it, you just need to press **the numpad keys 1-9 to mark the spaces in t
 - [ ] Add game over screen
 - [ ] Add restart button
 
-<h2 align="center">Created using:</h2>
+<p align="center"><strong>Created using:</strong></p>
 <p align="center">
     <img src="assets/bevy_logo_dark.svg" alt="bevy logo">
 </p>
