@@ -194,10 +194,6 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
         },
     ));
 
-    // commands.insert_resource(TTF {
-    //     handler: assets.load("fonts/FiraSans-Bold.ttf"),
-    // });
-
     commands.spawn((
         Board::new(),
         SpriteBundle {
@@ -356,11 +352,10 @@ fn mark(
     }
 }
 
-fn won(mut status: ResMut<Status>, mut query_board: Query<&Board>, mut query_text: Query<&mut Text>) {
+fn won(mut status: ResMut<Status>, query: Query<&Board>) {
     match *status {
         Status::Playing => {
-            let board = query_board.single();
-            let mut text = query_text.single_mut();
+            let board = query.single();
             match board.winner() {
                 Mark::X => {
                     info!("X won");
@@ -389,7 +384,7 @@ fn won(mut status: ResMut<Status>, mut query_board: Query<&Board>, mut query_tex
 fn ui(status: Res<Status>, turn: Res<Turn>, mut mark_event: EventReader<MarkEvent>, mut query: Query<&mut Text>) {
     match *status {
         Status::Playing => {
-            for event in mark_event.iter() {
+            for _ in mark_event.iter() {
                 info!("informing UI for {:#?}", *turn);
                 let mut text = query.single_mut();
                 text.sections[0].value = format!("{:?}", *turn);
