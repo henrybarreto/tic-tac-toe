@@ -7,7 +7,7 @@
     <img src="assets/screenshot.png" alt="tic-tac-toe screenshot">
 </p>
 
-This is a simple Tic-Tac-Toe game project built to **learn** how to use the Bevy Engine, a refreshingly and simple data-driven game engine built in Rust. Tic-Tac-Toe is a simple game that is played on a 3x3 grid. The game is played by two players, who take turns marking the spaces in a 3x3 grid. The player who succeeds in placing three of their marks in a horizontal, vertical, or diagonal row is the winner.
+This is a simple Tic-Tac-Toe game project built to **learn** how to use the **Bevy Engine**, a refreshingly and simple data-driven game engine built in Rust. Tic-Tac-Toe is a simple game that is played on a 3x3 grid. The game is played by two players, who take turns marking the spaces in a 3x3 grid. The player who succeeds in placing three of their marks in a horizontal, vertical, or diagonal row is the winner.
 
 ---
 

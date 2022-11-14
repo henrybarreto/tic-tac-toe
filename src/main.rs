@@ -1,19 +1,31 @@
 use bevy::prelude::*;
 
-pub enum Status {
-    Playing,
-    Won(Mark),
-    Draw
-}
-
-pub struct MarkImages {
+#[derive(Resource)]
+pub struct Marks {
     pub x: Handle<Image>,
     pub o: Handle<Image>,
 }
 
+#[derive(Resource)]
+pub enum Status {
+    Playing,
+    Won(Mark),
+    Draw,
+}
+
+#[derive(Resource)]
 pub enum Turn {
     X,
     O,
+}
+
+impl Turn {
+    fn next(&mut self) {
+        *self = match self {
+            Turn::X => Turn::O,
+            Turn::O => Turn::X,
+        }
+    }
 }
 
 #[derive(Component, PartialEq, Debug, Clone, Copy)]
@@ -23,16 +35,38 @@ pub enum Mark {
     Empty,
 }
 
-#[derive(Component, Clone, Debug)]
+impl Mark {
+    fn set_from_turn(&mut self, turn: &Turn) {
+        *self = match turn {
+            Turn::X => Mark::X,
+            Turn::O => Mark::O,
+        }
+    }
+}
+
+#[derive(Component, Debug, Clone, Copy)]
 pub struct Position {
     number: usize,
 }
 
 #[derive(Component)]
 pub struct Cell {
-    pub value: Mark,
+    pub mark: Mark,
     pub position: Position,
 }
+
+// NOTICE: positions based on `board.png` sprite.
+pub const BOARD_POSITIONS: [Vec2; 9] = [
+    Vec2::new(-170.0, -170.0),
+    Vec2::new(0.0, -170.0),
+    Vec2::new(170.0, -170.0),
+    Vec2::new(-170.0, 0.0),
+    Vec2::new(0.0, 0.0),
+    Vec2::new(170.0, 0.0),
+    Vec2::new(-170.0, 170.0),
+    Vec2::new(0.0, 170.0),
+    Vec2::new(170.0, 170.0),
+];
 
 #[derive(Component)]
 pub struct Board {
@@ -51,75 +85,75 @@ impl Board {
     pub fn new() -> Self {
         Board {
             cell1: Cell {
-                value: Mark::Empty,
+                mark: Mark::Empty,
                 position: Position { number: 1 },
             },
             cell2: Cell {
-                value: Mark::Empty,
+                mark: Mark::Empty,
                 position: Position { number: 2 },
             },
             cell3: Cell {
-                value: Mark::Empty,
+                mark: Mark::Empty,
                 position: Position { number: 3 },
             },
             cell4: Cell {
-                value: Mark::Empty,
+                mark: Mark::Empty,
                 position: Position { number: 4 },
             },
             cell5: Cell {
-                value: Mark::Empty,
+                mark: Mark::Empty,
                 position: Position { number: 5 },
             },
             cell6: Cell {
-                value: Mark::Empty,
+                mark: Mark::Empty,
                 position: Position { number: 6 },
             },
             cell7: Cell {
-                value: Mark::Empty,
+                mark: Mark::Empty,
                 position: Position { number: 7 },
             },
             cell8: Cell {
-                value: Mark::Empty,
+                mark: Mark::Empty,
                 position: Position { number: 8 },
             },
             cell9: Cell {
-                value: Mark::Empty,
+                mark: Mark::Empty,
                 position: Position { number: 9 },
             },
         }
     }
 
     fn is_full(&self) -> bool {
-        self.cell1.value != Mark::Empty &&
-            self.cell2.value != Mark::Empty &&
-            self.cell3.value != Mark::Empty &&
-            self.cell4.value != Mark::Empty &&
-            self.cell5.value != Mark::Empty &&
-            self.cell6.value != Mark::Empty &&
-            self.cell7.value != Mark::Empty &&
-            self.cell8.value != Mark::Empty &&
-            self.cell9.value != Mark::Empty
+        self.cell1.mark != Mark::Empty
+            && self.cell2.mark != Mark::Empty
+            && self.cell3.mark != Mark::Empty
+            && self.cell4.mark != Mark::Empty
+            && self.cell5.mark != Mark::Empty
+            && self.cell6.mark != Mark::Empty
+            && self.cell7.mark != Mark::Empty
+            && self.cell8.mark != Mark::Empty
+            && self.cell9.mark != Mark::Empty
     }
 
     pub fn winner(&self) -> Mark {
         let mut winner = Mark::Empty;
 
-        if self.cell1.value == self.cell2.value && self.cell2.value == self.cell3.value {
-            winner = self.cell1.value;
-        } else if self.cell4.value == self.cell5.value && self.cell5.value == self.cell6.value {
-            winner = self.cell4.value;
-        } else if self.cell7.value == self.cell8.value && self.cell8.value == self.cell9.value {
-            winner = self.cell7.value;
-        } else if self.cell1.value == self.cell4.value && self.cell4.value == self.cell7.value {
-            winner = self.cell1.value;
-        } else if self.cell2.value == self.cell5.value && self.cell5.value == self.cell8.value {
-            winner = self.cell2.value;
-        } else if self.cell3.value == self.cell6.value && self.cell6.value == self.cell9.value {
-            winner = self.cell3.value;
-        } else if self.cell1.value == self.cell5.value && self.cell5.value == self.cell9.value {
-            winner = self.cell1.value;
-        } else if self.cell3.value == self.cell5.value && self.cell5.value == self.cell7.value {
-            winner = self.cell3.value;
+        if self.cell1.mark == self.cell2.mark && self.cell2.mark == self.cell3.mark {
+            winner = self.cell1.mark;
+        } else if self.cell4.mark == self.cell5.mark && self.cell5.mark == self.cell6.mark {
+            winner = self.cell4.mark;
+        } else if self.cell7.mark == self.cell8.mark && self.cell8.mark == self.cell9.mark {
+            winner = self.cell7.mark;
+        } else if self.cell1.mark == self.cell4.mark && self.cell4.mark == self.cell7.mark {
+            winner = self.cell1.mark;
+        } else if self.cell2.mark == self.cell5.mark && self.cell5.mark == self.cell8.mark {
+            winner = self.cell2.mark;
+        } else if self.cell3.mark == self.cell6.mark && self.cell6.mark == self.cell9.mark {
+            winner = self.cell3.mark;
+        } else if self.cell1.mark == self.cell5.mark && self.cell5.mark == self.cell9.mark {
+            winner = self.cell1.mark;
+        } else if self.cell3.mark == self.cell5.mark && self.cell5.mark == self.cell7.mark {
+            winner = self.cell3.mark;
         }
 
         winner
@@ -132,62 +166,27 @@ pub struct DrawEvent {
 }
 
 fn setup(mut commands: Commands, assets: Res<AssetServer>) {
-    commands.spawn_bundle(Camera2dBundle::default());
-    commands.spawn_bundle(SpriteBundle {
+    commands.spawn(Camera2dBundle::default());
+    commands.spawn(SpriteBundle {
         texture: assets.load("background.png"),
         transform: Transform::from_xyz(0.0, 0.0, 0.0),
         ..default()
     });
-    commands
-        .spawn_bundle(SpriteBundle {
+    commands.spawn((
+        Board::new(),
+        SpriteBundle {
             texture: assets.load("board.png"),
             transform: Transform::from_xyz(0.0, 0.0, 1.0),
             ..default()
-        })
-        .insert(Board {
-            cell1: Cell {
-                value: Mark::Empty,
-                position: Position { number: 0 },
-            },
-            cell2: Cell {
-                value: Mark::Empty,
-                position: Position { number: 1 },
-            },
-            cell3: Cell {
-                value: Mark::Empty,
-                position: Position { number: 2 },
-            },
-            cell4: Cell {
-                value: Mark::Empty,
-                position: Position { number: 3 },
-            },
-            cell5: Cell {
-                value: Mark::Empty,
-                position: Position { number: 4 },
-            },
-            cell6: Cell {
-                value: Mark::Empty,
-                position: Position { number: 5 },
-            },
-            cell7: Cell {
-                value: Mark::Empty,
-                position: Position { number: 6 },
-            },
-            cell8: Cell {
-                value: Mark::Empty,
-                position: Position { number: 7 },
-            },
-            cell9: Cell {
-                value: Mark::Empty,
-                position: Position { number: 8 },
-            },
-        });
+        },
+    ));
+
+    commands.insert_resource(Status::Playing);
     commands.insert_resource(Turn::X);
-    commands.insert_resource(MarkImages {
+    commands.insert_resource(Marks {
         x: assets.load("x.png"),
         o: assets.load("o.png"),
     });
-    commands.insert_resource(Status::Playing);
 }
 
 fn input(
@@ -195,181 +194,127 @@ fn input(
     mut turn: ResMut<Turn>,
     keyboard: Res<Input<KeyCode>>,
     status: Res<Status>,
-    mut board_query: Query<&mut Board>,
+    mut query: Query<&mut Board>,
 ) {
     if let Status::Playing = *status {
         for key in keyboard.get_just_pressed() {
-            let mut board = board_query.single_mut();
+            let mut board = query.single_mut();
             match key {
                 KeyCode::Numpad1 => {
-                    if let Mark::Empty = board.cell1.value {
-                        board.cell1.value = match *turn {
-                            Turn::X => Mark::X,
-                            Turn::O => Mark::O,
-                        };
+                    if let Mark::Empty = board.cell1.mark {
+                        board.cell1.mark.set_from_turn(&turn);
 
-                        *turn = match *turn {
-                            Turn::X => Turn::O,
-                            Turn::O => Turn::X,
-                        };
-
-                        info!("Cell 1: {:?}", board.cell1.value);
+                        info!("Cell 0: {:?}", board.cell1.mark);
                         draw_event.send(DrawEvent {
-                            mark: board.cell1.value,
+                            mark: board.cell1.mark,
                             position: Position { number: 0 },
                         });
+
+                        turn.next();
                     }
                 }
                 KeyCode::Numpad2 => {
-                    if let Mark::Empty = board.cell2.value {
-                        board.cell2.value = match *turn {
-                            Turn::X => Mark::X,
-                            Turn::O => Mark::O,
-                        };
+                    if let Mark::Empty = board.cell2.mark {
+                        board.cell2.mark.set_from_turn(&turn);
 
-                        *turn = match *turn {
-                            Turn::X => Turn::O,
-                            Turn::O => Turn::X,
-                        };
-
-                        info!("Cell 2: {:?}", board.cell2.value);
+                        info!("Cell 1: {:?}", board.cell2.mark);
                         draw_event.send(DrawEvent {
-                            mark: board.cell2.value,
+                            mark: board.cell2.mark,
                             position: Position { number: 1 },
                         });
+
+                        turn.next();
                     }
                 }
                 KeyCode::Numpad3 => {
-                    if let Mark::Empty = board.cell3.value {
-                        board.cell3.value = match *turn {
-                            Turn::X => Mark::X,
-                            Turn::O => Mark::O,
-                        };
+                    if let Mark::Empty = board.cell3.mark {
+                        board.cell3.mark.set_from_turn(&turn);
 
-                        *turn = match *turn {
-                            Turn::X => Turn::O,
-                            Turn::O => Turn::X,
-                        };
-
-                        info!("Cell 3: {:?}", board.cell3.value);
+                        info!("Cell 2: {:?}", board.cell3.mark);
                         draw_event.send(DrawEvent {
-                            mark: board.cell3.value,
+                            mark: board.cell3.mark,
                             position: Position { number: 2 },
                         });
+
+                        turn.next();
                     }
                 }
                 KeyCode::Numpad4 => {
-                    if let Mark::Empty = board.cell4.value {
-                        board.cell4.value = match *turn {
-                            Turn::X => Mark::X,
-                            Turn::O => Mark::O,
-                        };
+                    if let Mark::Empty = board.cell4.mark {
+                        board.cell4.mark.set_from_turn(&turn);
 
-                        *turn = match *turn {
-                            Turn::X => Turn::O,
-                            Turn::O => Turn::X,
-                        };
-
-                        info!("Cell 4: {:?}", board.cell4.value);
+                        info!("Cell 3: {:?}", board.cell4.mark);
                         draw_event.send(DrawEvent {
-                            mark: board.cell4.value,
+                            mark: board.cell4.mark,
                             position: Position { number: 3 },
                         });
+
+                        turn.next();
                     }
                 }
                 KeyCode::Numpad5 => {
-                    if let Mark::Empty = board.cell5.value {
-                        board.cell5.value = match *turn {
-                            Turn::X => Mark::X,
-                            Turn::O => Mark::O,
-                        };
+                    if let Mark::Empty = board.cell5.mark {
+                        board.cell5.mark.set_from_turn(&turn);
 
-                        *turn = match *turn {
-                            Turn::X => Turn::O,
-                            Turn::O => Turn::X,
-                        };
-
-                        info!("Cell 5: {:?}", board.cell5.value);
+                        info!("Cell 4: {:?}", board.cell5.mark);
                         draw_event.send(DrawEvent {
-                            mark: board.cell5.value,
+                            mark: board.cell5.mark,
                             position: Position { number: 4 },
                         });
+
+                        turn.next();
                     }
                 }
                 KeyCode::Numpad6 => {
-                    if let Mark::Empty = board.cell6.value {
-                        board.cell6.value = match *turn {
-                            Turn::X => Mark::X,
-                            Turn::O => Mark::O,
-                        };
+                    if let Mark::Empty = board.cell6.mark {
+                        board.cell6.mark.set_from_turn(&turn);
 
-                        *turn = match *turn {
-                            Turn::X => Turn::O,
-                            Turn::O => Turn::X,
-                        };
-
-                        info!("Cell 6: {:?}", board.cell6.value);
+                        info!("Cell 5: {:?}", board.cell6.mark);
                         draw_event.send(DrawEvent {
-                            mark: board.cell6.value,
+                            mark: board.cell6.mark,
                             position: Position { number: 5 },
                         });
+
+                        turn.next();
                     }
                 }
                 KeyCode::Numpad7 => {
-                    if let Mark::Empty = board.cell7.value {
-                        board.cell7.value = match *turn {
-                            Turn::X => Mark::X,
-                            Turn::O => Mark::O,
-                        };
+                    if let Mark::Empty = board.cell7.mark {
+                        board.cell7.mark.set_from_turn(&turn);
 
-                        *turn = match *turn {
-                            Turn::X => Turn::O,
-                            Turn::O => Turn::X,
-                        };
-
-                        info!("Cell 7: {:?}", board.cell7.value);
+                        info!("Cell 6: {:?}", board.cell7.mark);
                         draw_event.send(DrawEvent {
-                            mark: board.cell7.value,
+                            mark: board.cell7.mark,
                             position: Position { number: 6 },
                         });
+
+                        turn.next();
                     }
                 }
                 KeyCode::Numpad8 => {
-                    if let Mark::Empty = board.cell8.value {
-                        board.cell8.value = match *turn {
-                            Turn::X => Mark::X,
-                            Turn::O => Mark::O,
-                        };
+                    if let Mark::Empty = board.cell8.mark {
+                        board.cell8.mark.set_from_turn(&turn);
 
-                        *turn = match *turn {
-                            Turn::X => Turn::O,
-                            Turn::O => Turn::X,
-                        };
-
-                        info!("Cell 8: {:?}", board.cell8.value);
+                        info!("Cell 7: {:?}", board.cell8.mark);
                         draw_event.send(DrawEvent {
-                            mark: board.cell8.value,
+                            mark: board.cell8.mark,
                             position: Position { number: 7 },
                         });
+
+                        turn.next();
                     }
                 }
                 KeyCode::Numpad9 => {
-                    if let Mark::Empty = board.cell9.value {
-                        board.cell9.value = match *turn {
-                            Turn::X => Mark::X,
-                            Turn::O => Mark::O,
-                        };
+                    if let Mark::Empty = board.cell9.mark {
+                        board.cell9.mark.set_from_turn(&turn);
 
-                        *turn = match *turn {
-                            Turn::X => Turn::O,
-                            Turn::O => Turn::X,
-                        };
-
-                        info!("Cell 9: {:?}", board.cell9.value);
+                        info!("Cell 8: {:?}", board.cell9.mark);
                         draw_event.send(DrawEvent {
-                            mark: board.cell9.value,
+                            mark: board.cell9.mark,
                             position: Position { number: 8 },
                         });
+
+                        turn.next();
                     }
                 }
                 _ => {}
@@ -378,120 +323,45 @@ fn input(
     }
 }
 
-fn draw(mut commands: Commands, mut status: ResMut<Status>, mut draw_events: EventReader<DrawEvent>, mark_images: Res<MarkImages>) {
+fn draw(
+    mut commands: Commands,
+    //mut status: ResMut<Status>,
+    mut draw_events: EventReader<DrawEvent>,
+    mark_images: Res<Marks>,
+) {
     for event in draw_events.iter() {
-                let texture = match event.mark {
-                    Mark::X => mark_images.x.clone(),
-                    Mark::O => mark_images.o.clone(),
-                    _ => panic!("Invalid mark"),
-                };
-
-                // TODO: Remove this position variable from that function.
-                let positions = vec![
-                    Vec3::new(-170.0, -170.0, 0.0),
-                    Vec3::new(0.0, -170.0, 0.0),
-                    Vec3::new(170.0, -170.0, 0.0),
-                    Vec3::new(-170.0, 0.0, 0.0),
-                    Vec3::new(0.0, 0.0, 0.0),
-                    Vec3::new(170.0, 0.0, 0.0),
-                    Vec3::new(-170.0, 170.0, 0.0),
-                    Vec3::new(0.0, 170.0, 0.0),
-                    Vec3::new(170.0, 170.0, 0.0),
-                ];
-
-                match event.position.number {
-                    0 => {
-                        info!("Drawing X at position 0");
-                        commands.spawn_bundle(SpriteBundle {
-                            texture,
-                            transform: Transform::from_xyz(positions[0].x, positions[0].y, 3.0),
-                            ..Default::default()
-                        });
-                    }
-                    1 => {
-                        info!("Drawing X at position 1");
-                        commands.spawn_bundle(SpriteBundle {
-                            texture,
-                            transform: Transform::from_xyz(positions[1].x, positions[1].y, 3.0),
-                            ..Default::default()
-                        });
-                    }
-                    2 => {
-                        info!("Drawing X at position 2");
-                        commands.spawn_bundle(SpriteBundle {
-                            texture,
-                            transform: Transform::from_xyz(positions[2].x, positions[2].y, 3.0),
-                            ..Default::default()
-                        });
-                    }
-                    3 => {
-                        info!("Drawing X at position 3");
-                        commands.spawn_bundle(SpriteBundle {
-                            texture,
-                            transform: Transform::from_xyz(positions[3].x, positions[3].y, 3.0),
-                            ..Default::default()
-                        });
-                    }
-                    4 => {
-                        info!("Drawing X at position 4");
-                        commands.spawn_bundle(SpriteBundle {
-                            texture,
-                            transform: Transform::from_xyz(positions[4].x, positions[4].y, 3.0),
-                            ..Default::default()
-                        });
-                    }
-                    5 => {
-                        info!("Drawing X at position 5");
-                        commands.spawn_bundle(SpriteBundle {
-                            texture,
-                            transform: Transform::from_xyz(positions[5].x, positions[5].y, 3.0),
-                            ..Default::default()
-                        });
-                    }
-                    6 => {
-                        info!("Drawing X at position 6");
-                        commands.spawn_bundle(SpriteBundle {
-                            texture,
-                            transform: Transform::from_xyz(positions[6].x, positions[6].y, 3.0),
-                            ..Default::default()
-                        });
-                    }
-                    7 => {
-                        info!("Drawing X at position 7");
-                        commands.spawn_bundle(SpriteBundle {
-                            texture,
-                            transform: Transform::from_xyz(positions[7].x, positions[7].y, 3.0),
-                            ..Default::default()
-                        });
-                    }
-                    8 => {
-                        info!("Drawing X at position 8");
-                        commands.spawn_bundle(SpriteBundle {
-                            texture,
-                            transform: Transform::from_xyz(positions[8].x, positions[8].y, 3.0),
-                            ..Default::default()
-                        });
-                    }
-                    _ => {}
-                }
-            }
+        info!("Drawing on at position {:#?}", event.position.number);
+        commands.spawn(SpriteBundle {
+            texture: match event.mark {
+                Mark::X => mark_images.x.clone(),
+                Mark::O => mark_images.o.clone(),
+                _ => panic!("Invalid mark"),
+            },
+            transform: Transform::from_xyz(
+                BOARD_POSITIONS[event.position.number].x,
+                BOARD_POSITIONS[event.position.number].y,
+                3.0,
+            ),
+            ..Default::default()
+        });
+    }
 }
 
-fn won(mut status: ResMut<Status>, mut board_query: Query<&Board>) {
+fn won(mut status: ResMut<Status>, query: Query<&Board>) {
     match *status {
         Status::Playing => {
-            for board in board_query.iter() {
+            for board in query.iter() {
                 match board.winner() {
                     Mark::X => {
                         info!("X won");
 
                         *status = Status::Won(Mark::X);
-                    },
+                    }
                     Mark::O => {
                         info!("O won");
 
                         *status = Status::Won(Mark::O);
-                    },
+                    }
                     Mark::Empty => {
                         if board.is_full() {
                             info!("Draw");
@@ -509,13 +379,22 @@ fn won(mut status: ResMut<Status>, mut board_query: Query<&Board>) {
 
 fn main() {
     App::new()
-        .insert_resource(WindowDescriptor {
-            title: "Tic Tac Toe".to_string(),
-            width: 600.0,
-            height: 600.0,
-            ..Default::default()
-        })
-        .add_plugins(DefaultPlugins)
+        .add_plugins(
+            DefaultPlugins
+                .set(AssetPlugin {
+                    watch_for_changes: true,
+                    ..default()
+                })
+                .set(WindowPlugin {
+                    window: WindowDescriptor {
+                        title: "Tic Tac Toe".to_string(),
+                        width: 600.0,
+                        height: 600.0,
+                        ..default()
+                    },
+                    ..default()
+                }),
+        )
         .add_event::<DrawEvent>()
         .add_startup_system(setup)
         .add_system(input)
