@@ -160,7 +160,12 @@ impl Board {
     }
 }
 
-pub struct DrawCellEvent {
+#[derive(Resource)]
+pub struct TTF {
+    pub handler: Handle<Font>,
+}
+
+pub struct MarkEvent {
     pub mark: Mark,
     pub position: Position,
 }
@@ -172,6 +177,27 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
         transform: Transform::from_xyz(0.0, 0.0, 0.0),
         ..default()
     });
+
+    commands.spawn((
+        Text2dBundle {
+            text: Text::from_section(
+                "X",
+                TextStyle {
+                    font: assets.load("fonts/FiraSans-Bold.ttf"),
+                    font_size: 40.0,
+                    color: Color::WHITE,
+                },
+            )
+            .with_alignment(TextAlignment::CENTER),
+            transform: Transform::from_translation(Vec3::new(0.0, 300.0, 1.0)),
+            ..Default::default()
+        },
+    ));
+
+    // commands.insert_resource(TTF {
+    //     handler: assets.load("fonts/FiraSans-Bold.ttf"),
+    // });
+
     commands.spawn((
         Board::new(),
         SpriteBundle {
@@ -190,10 +216,10 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
 }
 
 fn input(
-    mut draw_cell_event: EventWriter<DrawCellEvent>,
-    mut turn: ResMut<Turn>,
+    mut mark_cell_event: EventWriter<MarkEvent>,
     keyboard: Res<Input<KeyCode>>,
     status: Res<Status>,
+    turn: Res<Turn>,
     mut query: Query<&mut Board>,
 ) {
     if let Status::Playing = *status {
@@ -205,12 +231,10 @@ fn input(
                         board.cell1.mark.set_from_turn(&turn);
 
                         info!("Cell 0: {:?}", turn);
-                        draw_cell_event.send(DrawCellEvent {
+                        mark_cell_event.send(MarkEvent {
                             mark: board.cell1.mark,
                             position: Position { number: 0 },
                         });
-
-                        turn.next();
                     }
                 }
                 KeyCode::Numpad2 => {
@@ -218,12 +242,10 @@ fn input(
                         board.cell2.mark.set_from_turn(&turn);
 
                         info!("Cell 1: {:?}", board.cell2.mark);
-                        draw_cell_event.send(DrawCellEvent {
+                        mark_cell_event.send(MarkEvent {
                             mark: board.cell2.mark,
                             position: Position { number: 1 },
                         });
-
-                        turn.next();
                     }
                 }
                 KeyCode::Numpad3 => {
@@ -231,12 +253,10 @@ fn input(
                         board.cell3.mark.set_from_turn(&turn);
 
                         info!("Cell 2: {:?}", board.cell3.mark);
-                        draw_cell_event.send(DrawCellEvent {
+                        mark_cell_event.send(MarkEvent {
                             mark: board.cell3.mark,
                             position: Position { number: 2 },
                         });
-
-                        turn.next();
                     }
                 }
                 KeyCode::Numpad4 => {
@@ -244,12 +264,10 @@ fn input(
                         board.cell4.mark.set_from_turn(&turn);
 
                         info!("Cell 3: {:?}", board.cell4.mark);
-                        draw_cell_event.send(DrawCellEvent {
+                        mark_cell_event.send(MarkEvent {
                             mark: board.cell4.mark,
                             position: Position { number: 3 },
                         });
-
-                        turn.next();
                     }
                 }
                 KeyCode::Numpad5 => {
@@ -257,12 +275,10 @@ fn input(
                         board.cell5.mark.set_from_turn(&turn);
 
                         info!("Cell 4: {:?}", board.cell5.mark);
-                        draw_cell_event.send(DrawCellEvent {
+                        mark_cell_event.send(MarkEvent {
                             mark: board.cell5.mark,
                             position: Position { number: 4 },
                         });
-
-                        turn.next();
                     }
                 }
                 KeyCode::Numpad6 => {
@@ -270,12 +286,10 @@ fn input(
                         board.cell6.mark.set_from_turn(&turn);
 
                         info!("Cell 5: {:?}", board.cell6.mark);
-                        draw_cell_event.send(DrawCellEvent {
+                        mark_cell_event.send(MarkEvent {
                             mark: board.cell6.mark,
                             position: Position { number: 5 },
                         });
-
-                        turn.next();
                     }
                 }
                 KeyCode::Numpad7 => {
@@ -283,12 +297,10 @@ fn input(
                         board.cell7.mark.set_from_turn(&turn);
 
                         info!("Cell 6: {:?}", board.cell7.mark);
-                        draw_cell_event.send(DrawCellEvent {
+                        mark_cell_event.send(MarkEvent {
                             mark: board.cell7.mark,
                             position: Position { number: 6 },
                         });
-
-                        turn.next();
                     }
                 }
                 KeyCode::Numpad8 => {
@@ -296,12 +308,10 @@ fn input(
                         board.cell8.mark.set_from_turn(&turn);
 
                         info!("Cell 7: {:?}", board.cell8.mark);
-                        draw_cell_event.send(DrawCellEvent {
+                        mark_cell_event.send(MarkEvent {
                             mark: board.cell8.mark,
                             position: Position { number: 7 },
                         });
-
-                        turn.next();
                     }
                 }
                 KeyCode::Numpad9 => {
@@ -309,12 +319,10 @@ fn input(
                         board.cell9.mark.set_from_turn(&turn);
 
                         info!("Cell 8: {:?}", board.cell9.mark);
-                        draw_cell_event.send(DrawCellEvent {
+                        mark_cell_event.send(MarkEvent {
                             mark: board.cell9.mark,
                             position: Position { number: 8 },
                         });
-
-                        turn.next();
                     }
                 }
                 _ => {}
@@ -323,18 +331,19 @@ fn input(
     }
 }
 
-fn draw(
+fn mark(
     mut commands: Commands,
-    mut draw_events: EventReader<DrawCellEvent>,
+    mut draw_cell_events: EventReader<MarkEvent>,
     mark_images: Res<Marks>,
+    mut turn: ResMut<Turn>,
 ) {
-    for event in draw_events.iter() {
-        info!("Drawing on at position {:#?}", event.position.number);
+    for event in draw_cell_events.iter() {
+        info!("drawing on at position {:#?}", event.position.number);
         commands.spawn(SpriteBundle {
             texture: match event.mark {
                 Mark::X => mark_images.x.clone(),
                 Mark::O => mark_images.o.clone(),
-                _ => panic!("Invalid mark"),
+                _ => panic!("invalid mark"),
             },
             transform: Transform::from_xyz(
                 BOARD_POSITIONS[event.position.number].x,
@@ -343,36 +352,57 @@ fn draw(
             ),
             ..Default::default()
         });
+        turn.next();
     }
 }
 
-fn won(mut status: ResMut<Status>, query: Query<&Board>) {
+fn won(mut status: ResMut<Status>, mut query_board: Query<&Board>, mut query_text: Query<&mut Text>) {
     match *status {
         Status::Playing => {
-            for board in query.iter() {
-                match board.winner() {
-                    Mark::X => {
-                        info!("X won");
+            let board = query_board.single();
+            let mut text = query_text.single_mut();
+            match board.winner() {
+                Mark::X => {
+                    info!("X won");
 
-                        *status = Status::Won(Mark::X);
-                    }
-                    Mark::O => {
-                        info!("O won");
+                    *status = Status::Won(Mark::X);
+                }
+                Mark::O => {
+                    info!("O won");
 
-                        *status = Status::Won(Mark::O);
-                    }
-                    Mark::Empty => {
-                        if board.is_full() {
-                            info!("Draw");
+                    *status = Status::Won(Mark::O);
+                }
+                Mark::Empty => {
+                    if board.is_full() {
+                        info!("Draw");
 
-                            *status = Status::Draw;
-                        }
+                        *status = Status::Draw;
                     }
                 }
             }
         }
         Status::Won(_) => {}
         Status::Draw => {}
+    }
+}
+
+fn ui(status: Res<Status>, turn: Res<Turn>, mut mark_event: EventReader<MarkEvent>, mut query: Query<&mut Text>) {
+    match *status {
+        Status::Playing => {
+            for event in mark_event.iter() {
+                info!("informing UI for {:#?}", *turn);
+                let mut text = query.single_mut();
+                text.sections[0].value = format!("{:?}", *turn);
+            }
+        }
+        Status::Won(mark) => {
+            let mut text = query.single_mut();
+            text.sections[0].value = format!("{:?} won", mark);
+        }
+        Status::Draw => {
+            let mut text = query.single_mut();
+            text.sections[0].value = "Draw".to_string();
+        }
     }
 }
 
@@ -387,17 +417,19 @@ fn main() {
                 .set(WindowPlugin {
                     window: WindowDescriptor {
                         title: "Tic Tac Toe".to_string(),
-                        width: 600.0,
-                        height: 600.0,
+                        width: 700.0,
+                        height: 700.0,
+                        resizable: false,
                         ..default()
                     },
                     ..default()
                 }),
         )
-        .add_event::<DrawCellEvent>()
+        .add_event::<MarkEvent>()
         .add_startup_system(setup)
         .add_system(input)
-        .add_system(draw)
+        .add_system(mark)
         .add_system(won)
+        .add_system(ui)
         .run();
 }
