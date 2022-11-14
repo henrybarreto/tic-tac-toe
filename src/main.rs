@@ -179,6 +179,15 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
     });
 
     commands.spawn((
+        Board::new(),
+        SpriteBundle {
+            texture: assets.load("board.png"),
+            transform: Transform::from_xyz(0.0, 0.0, 1.0),
+            ..default()
+        },
+    ));
+
+    commands.spawn((
         Text2dBundle {
             text: Text::from_section(
                 "X",
@@ -188,18 +197,9 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
                     color: Color::WHITE,
                 },
             )
-            .with_alignment(TextAlignment::CENTER),
+                .with_alignment(TextAlignment::CENTER),
             transform: Transform::from_translation(Vec3::new(0.0, 300.0, 1.0)),
             ..Default::default()
-        },
-    ));
-
-    commands.spawn((
-        Board::new(),
-        SpriteBundle {
-            texture: assets.load("board.png"),
-            transform: Transform::from_xyz(0.0, 0.0, 1.0),
-            ..default()
         },
     ));
 
