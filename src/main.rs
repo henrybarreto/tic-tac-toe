@@ -13,7 +13,7 @@ pub enum Status {
     Draw,
 }
 
-#[derive(Resource)]
+#[derive(Resource, Debug)]
 pub enum Turn {
     X,
     O,
@@ -160,7 +160,7 @@ impl Board {
     }
 }
 
-pub struct DrawEvent {
+pub struct DrawCellEvent {
     pub mark: Mark,
     pub position: Position,
 }
@@ -190,7 +190,7 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
 }
 
 fn input(
-    mut draw_event: EventWriter<DrawEvent>,
+    mut draw_cell_event: EventWriter<DrawCellEvent>,
     mut turn: ResMut<Turn>,
     keyboard: Res<Input<KeyCode>>,
     status: Res<Status>,
@@ -204,8 +204,8 @@ fn input(
                     if let Mark::Empty = board.cell1.mark {
                         board.cell1.mark.set_from_turn(&turn);
 
-                        info!("Cell 0: {:?}", board.cell1.mark);
-                        draw_event.send(DrawEvent {
+                        info!("Cell 0: {:?}", turn);
+                        draw_cell_event.send(DrawCellEvent {
                             mark: board.cell1.mark,
                             position: Position { number: 0 },
                         });
@@ -218,7 +218,7 @@ fn input(
                         board.cell2.mark.set_from_turn(&turn);
 
                         info!("Cell 1: {:?}", board.cell2.mark);
-                        draw_event.send(DrawEvent {
+                        draw_cell_event.send(DrawCellEvent {
                             mark: board.cell2.mark,
                             position: Position { number: 1 },
                         });
@@ -231,7 +231,7 @@ fn input(
                         board.cell3.mark.set_from_turn(&turn);
 
                         info!("Cell 2: {:?}", board.cell3.mark);
-                        draw_event.send(DrawEvent {
+                        draw_cell_event.send(DrawCellEvent {
                             mark: board.cell3.mark,
                             position: Position { number: 2 },
                         });
@@ -244,7 +244,7 @@ fn input(
                         board.cell4.mark.set_from_turn(&turn);
 
                         info!("Cell 3: {:?}", board.cell4.mark);
-                        draw_event.send(DrawEvent {
+                        draw_cell_event.send(DrawCellEvent {
                             mark: board.cell4.mark,
                             position: Position { number: 3 },
                         });
@@ -257,7 +257,7 @@ fn input(
                         board.cell5.mark.set_from_turn(&turn);
 
                         info!("Cell 4: {:?}", board.cell5.mark);
-                        draw_event.send(DrawEvent {
+                        draw_cell_event.send(DrawCellEvent {
                             mark: board.cell5.mark,
                             position: Position { number: 4 },
                         });
@@ -270,7 +270,7 @@ fn input(
                         board.cell6.mark.set_from_turn(&turn);
 
                         info!("Cell 5: {:?}", board.cell6.mark);
-                        draw_event.send(DrawEvent {
+                        draw_cell_event.send(DrawCellEvent {
                             mark: board.cell6.mark,
                             position: Position { number: 5 },
                         });
@@ -283,7 +283,7 @@ fn input(
                         board.cell7.mark.set_from_turn(&turn);
 
                         info!("Cell 6: {:?}", board.cell7.mark);
-                        draw_event.send(DrawEvent {
+                        draw_cell_event.send(DrawCellEvent {
                             mark: board.cell7.mark,
                             position: Position { number: 6 },
                         });
@@ -296,7 +296,7 @@ fn input(
                         board.cell8.mark.set_from_turn(&turn);
 
                         info!("Cell 7: {:?}", board.cell8.mark);
-                        draw_event.send(DrawEvent {
+                        draw_cell_event.send(DrawCellEvent {
                             mark: board.cell8.mark,
                             position: Position { number: 7 },
                         });
@@ -309,7 +309,7 @@ fn input(
                         board.cell9.mark.set_from_turn(&turn);
 
                         info!("Cell 8: {:?}", board.cell9.mark);
-                        draw_event.send(DrawEvent {
+                        draw_cell_event.send(DrawCellEvent {
                             mark: board.cell9.mark,
                             position: Position { number: 8 },
                         });
@@ -325,8 +325,7 @@ fn input(
 
 fn draw(
     mut commands: Commands,
-    //mut status: ResMut<Status>,
-    mut draw_events: EventReader<DrawEvent>,
+    mut draw_events: EventReader<DrawCellEvent>,
     mark_images: Res<Marks>,
 ) {
     for event in draw_events.iter() {
@@ -395,7 +394,7 @@ fn main() {
                     ..default()
                 }),
         )
-        .add_event::<DrawEvent>()
+        .add_event::<DrawCellEvent>()
         .add_startup_system(setup)
         .add_system(input)
         .add_system(draw)
