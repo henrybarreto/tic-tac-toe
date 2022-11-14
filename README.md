@@ -1,5 +1,6 @@
 <p align="center">
-    <img src="assets/logo.png" alt="tic-tac-toe logo">
+    <img src="assets/logo.png#gh-dark-mode-only" alt="WK's dark logo" />
+    <img src="assets/logo.png#gh-light-mode-only" alt="WK's light logo" />
 </p>
 
 <p align="center">
