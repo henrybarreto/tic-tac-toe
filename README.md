@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="assets/logo.png#gh-dark-mode-only" alt="WK's dark logo" />
+    <img src="assets/logo_dark.png#gh-dark-mode-only" alt="WK's dark logo" />
     <img src="assets/logo.png#gh-light-mode-only" alt="WK's light logo" />
 </p>
 
