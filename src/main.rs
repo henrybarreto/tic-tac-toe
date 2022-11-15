@@ -173,7 +173,7 @@ pub struct MarkEvent {
 fn setup(mut commands: Commands, assets: Res<AssetServer>) {
     commands.spawn(Camera2dBundle::default());
     commands.spawn(SpriteBundle {
-        texture: assets.load("background.png"),
+        texture: assets.load("sprites/background.png"),
         transform: Transform::from_xyz(0.0, 0.0, 0.0),
         ..default()
     });
@@ -181,7 +181,7 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
     commands.spawn((
         Board::new(),
         SpriteBundle {
-            texture: assets.load("board.png"),
+            texture: assets.load("sprites/board.png"),
             transform: Transform::from_xyz(0.0, 0.0, 1.0),
             ..default()
         },
@@ -206,8 +206,8 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
     commands.insert_resource(Status::Playing);
     commands.insert_resource(Turn::X);
     commands.insert_resource(Marks {
-        x: assets.load("x.png"),
-        o: assets.load("o.png"),
+        x: assets.load("sprites/x.png"),
+        o: assets.load("sprites/o.png"),
     });
 }
 
