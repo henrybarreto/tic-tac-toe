@@ -17,6 +17,8 @@ To play it, you just need to press **the numpad keys 1-9 to mark the spaces in t
 ## TODO
 - [ ] add "created with Bevy" logo 
 - [ ] add instructions screen
+- [ ] add "restart" button
+- [ ] improve assets usage to avoid multiple copies of the same asset
 
 ---
 
