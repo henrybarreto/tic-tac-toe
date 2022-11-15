@@ -81,6 +81,12 @@ fn menu_button(
     }
 }
 
+fn menu_input(mut event: EventWriter<GameStatusEvent>, keyboard: Res<Input<KeyCode>>) {
+    if keyboard.just_pressed(KeyCode::Space) {
+        event.send(GameStatusEvent::Playing);
+    }
+}
+
 fn menu_cleanup(
     mut commands: Commands,
     mut event: EventReader<GameStatusEvent>,
@@ -566,7 +572,11 @@ fn main() {
         .add_system(manager)
         .add_state(GameStatus::Menu)
         .add_system_set(SystemSet::on_enter(GameStatus::Menu).with_system(menu_setup))
-        .add_system_set(SystemSet::on_update(GameStatus::Menu).with_system(menu_button))
+        .add_system_set(
+            SystemSet::on_update(GameStatus::Menu)
+                .with_system(menu_button)
+                .with_system(menu_input),
+        )
         .add_system_set(SystemSet::on_exit(GameStatus::Menu).with_system(menu_cleanup))
         .add_system_set(SystemSet::on_enter(GameStatus::Playing).with_system(board_setup))
         .add_event::<MarkEvent>()
@@ -578,10 +588,5 @@ fn main() {
                 .with_system(ui),
         )
         .add_system_set(SystemSet::on_exit(GameStatus::Playing).with_system(board_cleanup))
-        //.add_startup_system(setup)
-        // .add_system(input)
-        // .add_system(mark)
-        // .add_system(won)
-        // .add_system(ui)
         .run();
 }
