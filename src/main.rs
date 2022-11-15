@@ -337,7 +337,7 @@ fn input(
     mut mark_cell_event: EventWriter<MarkEvent>,
     keyboard: Res<Input<KeyCode>>,
     status: Res<PlayingStatus>,
-    turn: Res<Turn>,
+    mut turn: ResMut<Turn>,
     mut game_status: EventWriter<GameStatusEvent>,
     mut query: Query<&mut Board>,
 ) {
@@ -358,6 +358,8 @@ fn input(
                             mark: board.cell1.mark,
                             position: Position { number: 0 },
                         });
+
+                        turn.next();
                     }
                 }
                 KeyCode::Numpad2 => {
@@ -369,6 +371,8 @@ fn input(
                             mark: board.cell2.mark,
                             position: Position { number: 1 },
                         });
+
+                        turn.next();
                     }
                 }
                 KeyCode::Numpad3 => {
@@ -380,6 +384,8 @@ fn input(
                             mark: board.cell3.mark,
                             position: Position { number: 2 },
                         });
+
+                        turn.next();
                     }
                 }
                 KeyCode::Numpad4 => {
@@ -391,6 +397,8 @@ fn input(
                             mark: board.cell4.mark,
                             position: Position { number: 3 },
                         });
+
+                        turn.next();
                     }
                 }
                 KeyCode::Numpad5 => {
@@ -402,6 +410,8 @@ fn input(
                             mark: board.cell5.mark,
                             position: Position { number: 4 },
                         });
+
+                        turn.next();
                     }
                 }
                 KeyCode::Numpad6 => {
@@ -413,6 +423,8 @@ fn input(
                             mark: board.cell6.mark,
                             position: Position { number: 5 },
                         });
+
+                        turn.next();
                     }
                 }
                 KeyCode::Numpad7 => {
@@ -424,6 +436,8 @@ fn input(
                             mark: board.cell7.mark,
                             position: Position { number: 6 },
                         });
+
+                        turn.next();
                     }
                 }
                 KeyCode::Numpad8 => {
@@ -435,6 +449,8 @@ fn input(
                             mark: board.cell8.mark,
                             position: Position { number: 7 },
                         });
+
+                        turn.next();
                     }
                 }
                 KeyCode::Numpad9 => {
@@ -446,6 +462,8 @@ fn input(
                             mark: board.cell9.mark,
                             position: Position { number: 8 },
                         });
+
+                        turn.next();
                     }
                 }
                 _ => {}
@@ -458,7 +476,6 @@ fn mark(
     mut commands: Commands,
     mut draw_cell_events: EventReader<MarkEvent>,
     mark_images: Res<Marks>,
-    mut turn: ResMut<Turn>,
 ) {
     for event in draw_cell_events.iter() {
         info!("drawing on at position {:#?}", event.position.number);
@@ -477,7 +494,6 @@ fn mark(
                 ..Default::default()
             })
             .insert(Sprite);
-        turn.next();
     }
 }
 
