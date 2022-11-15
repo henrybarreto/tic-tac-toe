@@ -309,33 +309,6 @@ fn board_setup(mut commands: Commands, assets: Res<AssetServer>) {
     });
 }
 
-// fn board_cleanup(
-//     mut commands: Commands,
-//     mut playing_status: ResMut<PlayingStatus>,
-//     mut turn: ResMut<Turn>,
-//     mut query: Query<Entity, With<Sprite>>,
-// ) {
-//     for entity in query.iter_mut() {
-//         commands.entity(entity).despawn();
-//     }
-//     // for (entity, mut board) in board_query.iter_mut() {
-//     //     // board.cell1.mark = Mark::Empty;
-//     //     // board.cell2.mark = Mark::Empty;
-//     //     // board.cell3.mark = Mark::Empty;
-//     //     // board.cell4.mark = Mark::Empty;
-//     //     // board.cell5.mark = Mark::Empty;
-//     //     // board.cell6.mark = Mark::Empty;
-//     //     // board.cell7.mark = Mark::Empty;
-//     //     // board.cell8.mark = Mark::Empty;
-//     //     // board.cell9.mark = Mark::Empty;
-//     //
-//     //     commands.despawn_recursive(entity);
-//     // }
-//
-//     *playing_status = PlayingStatus::Playing;
-//     *turn = Turn::X;
-// }
-
 fn board_cleanup(
     mut commands: Commands,
     mut event: EventReader<GameStatusEvent>,
@@ -567,7 +540,6 @@ fn manager(mut state: ResMut<State<GameStatus>>, mut events: EventReader<GameSta
             }
         }
     }
-    //info!("manager called");
 }
 
 fn main() {

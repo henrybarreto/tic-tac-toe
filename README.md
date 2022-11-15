@@ -15,11 +15,8 @@ This is a simple Tic-Tac-Toe game project built to **learn** how to use the **Be
 To play it, you just need to press **the numpad keys 1-9 to mark the spaces in the grid**. The first player to get three of their marks in a row (up, down, across, or diagonally) is the winner. When all 9 squares are full, the game is over. If no player has 3 marks in a row, the game ends in a tie (draw).
 
 ## TODO
-- [ ] Add start screen
-- [ ] Add instructions screen
-- [ ] Add line indicating the winner 
-- [ ] Add game over screen
-- [ ] Add restart button
+- [ ] add "created with Bevy" logo 
+- [ ] add instructions screen
 
 ---
 
