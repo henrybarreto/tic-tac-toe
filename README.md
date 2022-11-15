@@ -12,7 +12,7 @@ This is a simple Tic-Tac-Toe game project built to **learn** how to use the **Be
 ---
 
 ## How to play
-To play it, you just need to press **the numpad keys 1-9 to mark the spaces in the grid**. The first player to get three of their marks in a row (up, down, across, or diagonally) is the winner. When all 9 squares are full, the game is over. If no player has 3 marks in a row, the game ends in a tie (draw).
+To play it, just press *space* or click on play button on menu to be redirected to board. When at the board, you just need to press **the numpad keys 1-9 to mark the spaces in the grid**. The first player to get three of their marks in a row (up, down, across, or diagonally) is the winner. When all 9 squares are full, the game is over. If no player has 3 marks in a row, the game ends in a tie (draw). To restart the game, press *Esc* to be returned to menu and press *space* or click on play button again.
 
 ## TODO
 - [ ] add "created with Bevy" logo 
