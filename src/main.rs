@@ -1,13 +1,107 @@
 use bevy::prelude::*;
 
+#[derive(Resource, Debug, Clone, Eq, PartialEq, Hash)]
+pub enum GameStatus {
+    Menu,
+    Playing,
+}
+
+pub enum GameStatusEvent {
+    Menu,
+    Playing,
+}
+
+#[derive(Component)]
+pub struct PlayButton;
+
+#[derive(Component)]
+pub struct Sprite;
+
+fn setup(mut commands: Commands) {
+    commands.spawn(Camera2dBundle::default());
+}
+
+fn menu_setup(mut commands: Commands, assets: Res<AssetServer>) {
+    commands
+        .spawn(SpriteBundle {
+            texture: assets.load("sprites/background.png"),
+            transform: Transform::from_xyz(0.0, 0.0, 0.0),
+            ..default()
+        })
+        .insert(Sprite);
+    commands
+        .spawn(SpriteBundle {
+            texture: assets.load("sprites/logo.png"),
+            transform: Transform::from_xyz(0.0, 200.0, 1.0),
+            ..default()
+        })
+        .insert(Sprite);
+    commands
+        .spawn(SpriteBundle {
+            texture: assets.load("sprites/copyleft.png"),
+            transform: Transform::from_xyz(0.0, -200.0, 1.0),
+            ..default()
+        })
+        .insert(Sprite);
+    commands
+        .spawn(SpriteBundle {
+            texture: assets.load("sprites/start.png"),
+            transform: Transform::from_xyz(0.0, -100.0, 1.0),
+            ..default()
+        })
+        .insert(PlayButton)
+        .insert(Sprite);
+}
+
+fn menu_button(
+    mouse: Res<Input<MouseButton>>,
+    mut event: EventWriter<GameStatusEvent>,
+    windows: Res<Windows>,
+    button_query: Query<(&PlayButton, &Transform)>,
+    camera_query: Query<(&Camera, &GlobalTransform)>,
+) {
+    let window = windows.get_primary().unwrap();
+    if let Some(position) = window.cursor_position() {
+        let (camera, global_transform) = camera_query.single();
+        let (_, transform) = button_query.single();
+        let ray = camera.viewport_to_world(global_transform, position);
+        if let Some(ray) = ray {
+            if ray.origin.x > transform.translation.x - 100.0
+                && ray.origin.x < transform.translation.x + 100.0
+            {
+                if ray.origin.y > transform.translation.y - 50.0
+                    && ray.origin.y < transform.translation.y + 50.0
+                {
+                    if mouse.just_pressed(MouseButton::Left) {
+                        event.send(GameStatusEvent::Playing);
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn menu_cleanup(
+    mut commands: Commands,
+    mut event: EventReader<GameStatusEvent>,
+    mut query: Query<Entity, With<Sprite>>,
+) {
+    for _ in event.iter() {
+        for entity in query.iter_mut() {
+            commands.entity(entity).despawn();
+            println!("Despawning entity: {:?}", entity);
+        }
+    }
+}
+
 #[derive(Resource)]
 pub struct Marks {
     pub x: Handle<Image>,
     pub o: Handle<Image>,
 }
 
-#[derive(Resource)]
-pub enum Status {
+#[derive(Resource, Debug, Clone, Eq, PartialEq, Hash)]
+pub enum PlayingStatus {
     Playing,
     Won(Mark),
     Draw,
@@ -28,7 +122,7 @@ impl Turn {
     }
 }
 
-#[derive(Component, PartialEq, Debug, Clone, Copy)]
+#[derive(Component, Eq, PartialEq, Debug, Clone, Copy, Hash)]
 pub enum Mark {
     X,
     O,
@@ -170,25 +264,29 @@ pub struct MarkEvent {
     pub position: Position,
 }
 
-fn setup(mut commands: Commands, assets: Res<AssetServer>) {
-    commands.spawn(Camera2dBundle::default());
-    commands.spawn(SpriteBundle {
-        texture: assets.load("sprites/background.png"),
-        transform: Transform::from_xyz(0.0, 0.0, 0.0),
-        ..default()
-    });
-
-    commands.spawn((
-        Board::new(),
-        SpriteBundle {
-            texture: assets.load("sprites/board.png"),
-            transform: Transform::from_xyz(0.0, 0.0, 1.0),
+fn board_setup(mut commands: Commands, assets: Res<AssetServer>) {
+    //commands.spawn(Camera2dBundle::default());
+    commands
+        .spawn(SpriteBundle {
+            texture: assets.load("sprites/background.png"),
+            transform: Transform::from_xyz(0.0, 0.0, 0.0),
             ..default()
-        },
-    ));
+        })
+        .insert(Sprite);
 
-    commands.spawn((
-        Text2dBundle {
+    commands
+        .spawn((
+            Board::new(),
+            SpriteBundle {
+                texture: assets.load("sprites/board.png"),
+                transform: Transform::from_xyz(0.0, 0.0, 1.0),
+                ..default()
+            },
+        ))
+        .insert(Sprite);
+
+    commands
+        .spawn(Text2dBundle {
             text: Text::from_section(
                 "X",
                 TextStyle {
@@ -197,13 +295,13 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
                     color: Color::WHITE,
                 },
             )
-                .with_alignment(TextAlignment::CENTER),
+            .with_alignment(TextAlignment::CENTER),
             transform: Transform::from_translation(Vec3::new(0.0, 300.0, 1.0)),
             ..Default::default()
-        },
-    ));
+        })
+        .insert(Sprite);
 
-    commands.insert_resource(Status::Playing);
+    commands.insert_resource(PlayingStatus::Playing);
     commands.insert_resource(Turn::X);
     commands.insert_resource(Marks {
         x: assets.load("sprites/x.png"),
@@ -211,14 +309,64 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
     });
 }
 
+// fn board_cleanup(
+//     mut commands: Commands,
+//     mut playing_status: ResMut<PlayingStatus>,
+//     mut turn: ResMut<Turn>,
+//     mut query: Query<Entity, With<Sprite>>,
+// ) {
+//     for entity in query.iter_mut() {
+//         commands.entity(entity).despawn();
+//     }
+//     // for (entity, mut board) in board_query.iter_mut() {
+//     //     // board.cell1.mark = Mark::Empty;
+//     //     // board.cell2.mark = Mark::Empty;
+//     //     // board.cell3.mark = Mark::Empty;
+//     //     // board.cell4.mark = Mark::Empty;
+//     //     // board.cell5.mark = Mark::Empty;
+//     //     // board.cell6.mark = Mark::Empty;
+//     //     // board.cell7.mark = Mark::Empty;
+//     //     // board.cell8.mark = Mark::Empty;
+//     //     // board.cell9.mark = Mark::Empty;
+//     //
+//     //     commands.despawn_recursive(entity);
+//     // }
+//
+//     *playing_status = PlayingStatus::Playing;
+//     *turn = Turn::X;
+// }
+
+fn board_cleanup(
+    mut commands: Commands,
+    mut event: EventReader<GameStatusEvent>,
+    mut playing_status: ResMut<PlayingStatus>,
+    mut turn: ResMut<Turn>,
+    mut query: Query<Entity, With<Sprite>>,
+) {
+    for _ in event.iter() {
+        for entity in query.iter_mut() {
+            commands.entity(entity).despawn();
+            println!("Despawning entity: {:?}", entity);
+        }
+    }
+
+    *playing_status = PlayingStatus::Playing;
+    *turn = Turn::X;
+}
+
 fn input(
     mut mark_cell_event: EventWriter<MarkEvent>,
     keyboard: Res<Input<KeyCode>>,
-    status: Res<Status>,
+    status: Res<PlayingStatus>,
     turn: Res<Turn>,
+    mut game_status: EventWriter<GameStatusEvent>,
     mut query: Query<&mut Board>,
 ) {
-    if let Status::Playing = *status {
+    if keyboard.just_pressed(KeyCode::Escape) {
+        game_status.send(GameStatusEvent::Menu);
+    }
+
+    if let PlayingStatus::Playing = *status {
         for key in keyboard.get_just_pressed() {
             let mut board = query.single_mut();
             match key {
@@ -335,70 +483,91 @@ fn mark(
 ) {
     for event in draw_cell_events.iter() {
         info!("drawing on at position {:#?}", event.position.number);
-        commands.spawn(SpriteBundle {
-            texture: match event.mark {
-                Mark::X => mark_images.x.clone(),
-                Mark::O => mark_images.o.clone(),
-                _ => panic!("invalid mark"),
-            },
-            transform: Transform::from_xyz(
-                BOARD_POSITIONS[event.position.number].x,
-                BOARD_POSITIONS[event.position.number].y,
-                3.0,
-            ),
-            ..Default::default()
-        });
+        commands
+            .spawn(SpriteBundle {
+                texture: match event.mark {
+                    Mark::X => mark_images.x.clone(),
+                    Mark::O => mark_images.o.clone(),
+                    _ => panic!("invalid mark"),
+                },
+                transform: Transform::from_xyz(
+                    BOARD_POSITIONS[event.position.number].x,
+                    BOARD_POSITIONS[event.position.number].y,
+                    3.0,
+                ),
+                ..Default::default()
+            })
+            .insert(Sprite);
         turn.next();
     }
 }
 
-fn won(mut status: ResMut<Status>, query: Query<&Board>) {
+fn won(mut status: ResMut<PlayingStatus>, query: Query<&Board>) {
     match *status {
-        Status::Playing => {
+        PlayingStatus::Playing => {
             let board = query.single();
             match board.winner() {
                 Mark::X => {
                     info!("X won");
 
-                    *status = Status::Won(Mark::X);
+                    *status = PlayingStatus::Won(Mark::X);
                 }
                 Mark::O => {
                     info!("O won");
 
-                    *status = Status::Won(Mark::O);
+                    *status = PlayingStatus::Won(Mark::O);
                 }
                 Mark::Empty => {
                     if board.is_full() {
                         info!("Draw");
 
-                        *status = Status::Draw;
+                        *status = PlayingStatus::Draw;
                     }
                 }
             }
         }
-        Status::Won(_) => {}
-        Status::Draw => {}
+        PlayingStatus::Won(_) => {}
+        PlayingStatus::Draw => {}
     }
 }
 
-fn ui(status: Res<Status>, turn: Res<Turn>, mut mark_event: EventReader<MarkEvent>, mut query: Query<&mut Text>) {
+fn ui(
+    status: Res<PlayingStatus>,
+    turn: Res<Turn>,
+    mut mark_event: EventReader<MarkEvent>,
+    mut query: Query<&mut Text>,
+) {
     match *status {
-        Status::Playing => {
+        PlayingStatus::Playing => {
             for _ in mark_event.iter() {
                 info!("informing UI for {:#?}", *turn);
                 let mut text = query.single_mut();
                 text.sections[0].value = format!("{:?}", *turn);
             }
         }
-        Status::Won(mark) => {
+        PlayingStatus::Won(mark) => {
             let mut text = query.single_mut();
             text.sections[0].value = format!("{:?} won", mark);
         }
-        Status::Draw => {
+        PlayingStatus::Draw => {
             let mut text = query.single_mut();
             text.sections[0].value = "Draw".to_string();
         }
     }
+}
+
+fn manager(mut state: ResMut<State<GameStatus>>, mut events: EventReader<GameStatusEvent>) {
+    for event in events.iter() {
+        match event {
+            GameStatusEvent::Menu => {
+                state.set(GameStatus::Menu).unwrap();
+            }
+            GameStatusEvent::Playing => {
+                state.set(GameStatus::Playing).unwrap();
+            }
+        }
+    }
+    //info!("manager called");
 }
 
 fn main() {
@@ -420,11 +589,27 @@ fn main() {
                     ..default()
                 }),
         )
-        .add_event::<MarkEvent>()
+        .add_event::<GameStatusEvent>()
         .add_startup_system(setup)
-        .add_system(input)
-        .add_system(mark)
-        .add_system(won)
-        .add_system(ui)
+        .add_system(manager)
+        .add_state(GameStatus::Menu)
+        .add_system_set(SystemSet::on_enter(GameStatus::Menu).with_system(menu_setup))
+        .add_system_set(SystemSet::on_update(GameStatus::Menu).with_system(menu_button))
+        .add_system_set(SystemSet::on_exit(GameStatus::Menu).with_system(menu_cleanup))
+        .add_system_set(SystemSet::on_enter(GameStatus::Playing).with_system(board_setup))
+        .add_event::<MarkEvent>()
+        .add_system_set(
+            SystemSet::on_update(GameStatus::Playing)
+                .with_system(input)
+                .with_system(mark)
+                .with_system(won)
+                .with_system(ui),
+        )
+        .add_system_set(SystemSet::on_exit(GameStatus::Playing).with_system(board_cleanup))
+        //.add_startup_system(setup)
+        // .add_system(input)
+        // .add_system(mark)
+        // .add_system(won)
+        // .add_system(ui)
         .run();
 }
