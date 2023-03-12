@@ -1,5 +1,15 @@
 use bevy::prelude::*;
 
+#[derive(Resource)]
+pub struct GameAssets {
+    pub logo: Handle<Image>,
+    pub copy: Handle<Image>,
+    pub start: Handle<Image>,
+    pub background: Handle<Image>,
+    pub x: Handle<Image>,
+    pub o: Handle<Image>,
+}
+
 #[derive(Resource, Debug, Clone, Eq, PartialEq, Hash)]
 pub enum GameStatus {
     Menu,
@@ -17,35 +27,44 @@ pub struct PlayButton;
 #[derive(Component)]
 pub struct Sprite;
 
-fn setup(mut commands: Commands) {
+fn setup(mut commands: Commands, assets: Res<AssetServer>) {
     commands.spawn(Camera2dBundle::default());
+
+    commands.insert_resource(GameAssets {
+        logo: assets.load("sprites/logo.png"),
+        copy: assets.load("sprites/copyleft.png"),
+        start: assets.load("sprites/start.png"),
+        background: assets.load("sprites/background.png"),
+        x: assets.load("sprites/x.png"),
+        o: assets.load("sprites/o.png"),
+    });
 }
 
-fn menu_setup(mut commands: Commands, assets: Res<AssetServer>) {
+fn menu_setup(mut commands: Commands, game_assets: Res<GameAssets>) {
     commands
         .spawn(SpriteBundle {
-            texture: assets.load("sprites/background.png"),
+            texture: game_assets.background.clone(),
             transform: Transform::from_xyz(0.0, 0.0, 0.0),
             ..default()
         })
         .insert(Sprite);
     commands
         .spawn(SpriteBundle {
-            texture: assets.load("sprites/logo.png"),
+            texture: game_assets.logo.clone(),
             transform: Transform::from_xyz(0.0, 200.0, 1.0),
             ..default()
         })
         .insert(Sprite);
     commands
         .spawn(SpriteBundle {
-            texture: assets.load("sprites/copyleft.png"),
+            texture: game_assets.copy.clone(),
             transform: Transform::from_xyz(0.0, -200.0, 1.0),
             ..default()
         })
         .insert(Sprite);
     commands
         .spawn(SpriteBundle {
-            texture: assets.load("sprites/start.png"),
+            texture: game_assets.start.clone(),
             transform: Transform::from_xyz(0.0, -100.0, 1.0),
             ..default()
         })
@@ -98,12 +117,6 @@ fn menu_cleanup(
             println!("Despawning entity: {:?}", entity);
         }
     }
-}
-
-#[derive(Resource)]
-pub struct Marks {
-    pub x: Handle<Image>,
-    pub o: Handle<Image>,
 }
 
 #[derive(Resource, Debug, Clone, Eq, PartialEq, Hash)]
@@ -309,10 +322,6 @@ fn board_setup(mut commands: Commands, assets: Res<AssetServer>) {
 
     commands.insert_resource(PlayingStatus::Playing);
     commands.insert_resource(Turn::X);
-    commands.insert_resource(Marks {
-        x: assets.load("sprites/x.png"),
-        o: assets.load("sprites/o.png"),
-    });
 }
 
 fn board_cleanup(
@@ -475,15 +484,15 @@ fn input(
 fn mark(
     mut commands: Commands,
     mut draw_cell_events: EventReader<MarkEvent>,
-    mark_images: Res<Marks>,
+    game_assets: Res<GameAssets>,
 ) {
     for event in draw_cell_events.iter() {
         info!("drawing on at position {:#?}", event.position.number);
         commands
             .spawn(SpriteBundle {
                 texture: match event.mark {
-                    Mark::X => mark_images.x.clone(),
-                    Mark::O => mark_images.o.clone(),
+                    Mark::X => game_assets.x.clone(),
+                    Mark::O => game_assets.o.clone(),
                     _ => panic!("invalid mark"),
                 },
                 transform: Transform::from_xyz(

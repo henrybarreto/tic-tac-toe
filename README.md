@@ -18,7 +18,6 @@ To play it, just press *space* or click on play button on menu to be redirected 
 - [ ] add "created with Bevy" logo 
 - [ ] add instructions screen
 - [ ] add "restart" button
-- [ ] improve assets usage to avoid multiple copies of the same asset
 
 ---
 
