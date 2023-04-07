@@ -194,6 +194,7 @@ pub struct Board {
     pub cell9: Cell,
 }
 
+// NOTICE: I know this is not the best way to do this, but it works for now.
 impl Board {
     pub fn new() -> Self {
         Board {
